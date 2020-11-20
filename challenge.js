@@ -6,10 +6,10 @@ const rl = readline.createInterface({
   terminal: true,
 });
 /** Default indicies and file names for easier testing */
-const DEFAULT_WEATHER_COLUMNS = '0, 1, 2';
+const DEFAULT_WEATHER_COLUMNS = 'Dy, 1, 2';
 const WEATHER_DATA_DEFAULT_NAME = 'weather_data.txt';
 const SOCCER_DATA_DEFAULT_NAME = 'soccer_data.txt';
-const DEFAULT_SOCCER_COLUMNS = '1, 8, 6'
+const DEFAULT_SOCCER_COLUMNS = 'Team, 8, 6'
 
 /**
  * Helper function to remove extra space from user input
@@ -93,13 +93,36 @@ function findLowestSpread(table, index = 0, lowest = Number.POSITIVE_INFINITY, l
   return findLowestSpread(table, index + 1, lowest, lowestMetric)
 }
 
+function getRowsFromDataString(dataString, metric) {
+  const htmlStripped = dataString.trim().replace(/<[^>]*>?/gm, '');
+  const headerRow = getHeaderRow(htmlStripped, metric);
+  const table = htmlStripped.replace(/<[^>]*>?/gm, '').split(headerRow)[1];
+  return table.split(/\n/ig).filter((exists) => !!exists);
+}
+
+function getHeaderRow(string, metric) {
+  return string.split(/\n/ig).find((line) => {
+    return line.includes(metric)
+  })
+}
+
+function getMetricIndex(dataString, columns) {
+  const htmlStripped = dataString.trim().replace(/<[^>]*>?/gm, '');
+  const headerRow = getHeaderRow(htmlStripped, columns[0]);
+  const headerRowSplit = headerRow.trim().split(/\s+/);
+  const index = headerRowSplit.findIndex((val) => columns[0] == val);
+  return index;
+}
+
 async function main() {
   const weatherFileName = await prompt('Please enter name of weather data file: \n', WEATHER_DATA_DEFAULT_NAME);
   const weatherDataString = fs.readFileSync(weatherFileName, 'utf8');
   const weatherColumnsString = await prompt('Please enter the columns indices to find the minimum spread respectively: "metric, max, min" separated by commas: \n', DEFAULT_WEATHER_COLUMNS)
   const weatherColumns = getColumnsFromInput(weatherColumnsString);
-  const weatherStringRows = weatherDataString.trim().split('\n');
-  const weatherTable = createTable(weatherStringRows, weatherColumns);
+  const weatherStringRows = getRowsFromDataString(weatherDataString, weatherColumns[0]);
+  const weatherMetricIndex = getMetricIndex(weatherDataString, weatherColumns);
+  const weatherKeyIndecies = [weatherMetricIndex, weatherColumns[1], weatherColumns[2]]
+  const weatherTable = createTable(weatherStringRows, weatherKeyIndecies);
   const weatherLowestMetric = findLowestSpread(weatherTable);
   console.log("Found lowest metric for weather data as", weatherLowestMetric);
 
@@ -107,11 +130,13 @@ async function main() {
   const soccerDataString = fs.readFileSync(soccerFileName, 'utf8');
   const soccerColumnsString = await prompt('Please enter the columns indices to find the minimum spread respectively: "metric, max, min" separated by commas: \n', DEFAULT_SOCCER_COLUMNS)
   const soccerColumns = getColumnsFromInput(soccerColumnsString);
-  const soccerStringRows = soccerDataString.trim().split('\n');
-  const soccerTable = createTable(soccerStringRows, soccerColumns);
+  const soccerStringRows = getRowsFromDataString(soccerDataString, soccerColumns[0]);
+  const soccerMetricIndex = getMetricIndex(soccerDataString, soccerColumns);
+  const soccerKeyIndecies = [soccerMetricIndex, soccerColumns[1], soccerColumns[2]]
+  const soccerTable = createTable(soccerStringRows, soccerKeyIndecies);
   const soccerLowestMetric = findLowestSpread(soccerTable);
   console.log("Found lowest metric for soccer data as", soccerLowestMetric);
   process.exit(1);
 }
 
-main();
+main()
