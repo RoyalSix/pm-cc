@@ -93,6 +93,11 @@ function findLowestSpread(table, index = 0, lowest = Number.POSITIVE_INFINITY, l
   return findLowestSpread(table, index + 1, lowest, lowestMetric)
 }
 
+/**
+ * Helper function to create row from the raw string input, which might need cleaning
+ * @param {String} dataString - The entire data string
+ * @param {String} metric - The key of the column to indicate the metric to solve for
+ */
 function getRowsFromDataString(dataString, metric) {
   const htmlStripped = dataString.trim().replace(/<[^>]*>?/gm, '');
   const headerRow = getHeaderRow(htmlStripped, metric);
@@ -100,9 +105,14 @@ function getRowsFromDataString(dataString, metric) {
   return table.split(/\n/ig).filter((exists) => !!exists);
 }
 
+/**
+ * Helper function to find 
+ * @param {String} string - The entire data string
+ * @param {String} metric - The key of the column to indicate the metric to solve for
+ */
 function getHeaderRow(string, metric) {
   return string.split(/\n/ig).find((line) => {
-    return line.includes(metric)
+    return line.match(new RegExp(metric  + '\\s+'))
   })
 }
 
