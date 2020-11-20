@@ -116,6 +116,11 @@ function getHeaderRow(string, metric) {
   })
 }
 
+/**
+ * helper function to find the index of the corresponding in columns metric
+ * @param {*} dataString - The entire data string
+ * @param {*} columns - The columns of the indicies given by user to parse
+ */
 function getMetricIndex(dataString, columns) {
   const htmlStripped = dataString.trim().replace(/<[^>]*>?/gm, '');
   const headerRow = getHeaderRow(htmlStripped, columns[0]);
