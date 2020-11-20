@@ -5,6 +5,7 @@ const rl = readline.createInterface({
   output: process.stdout,
   terminal: true,
 });
+/** Default indicies and file names for easier testing */
 const DEFAULT_WEATHER_COLUMNS = '0, 1, 2';
 const WEATHER_DATA_DEFAULT_NAME = 'weather_data.txt';
 const SOCCER_DATA_DEFAULT_NAME = 'soccer_data.txt';
@@ -16,6 +17,7 @@ const DEFAULT_SOCCER_COLUMNS = '1, 8, 6'
  * @returns {String[]}
  */
 function getColumnsFromInput(columnsString) {
+  /** Splitting on commas, and spaces if any */
   return columnsString.split(/,\s*/ig);
 }
 
@@ -32,6 +34,7 @@ function prompt(question, defaultAnswer) {
         resolve(resp);
       } else {
         reject('There was an error, please try again');
+        rl.close();
       }
     })
     if (defaultAnswer) {
@@ -42,16 +45,18 @@ function prompt(question, defaultAnswer) {
 
 /**
  * Helper function to create a table from a string input of columns/rows
- * @param {String[]} stringRows - The string of data to parse
- * @param {Number[]} keyIndices - The key indicies to use for row values
+ * @param {String[]} stringRows - The remaining rows of the data to parse
+ * @param {Number[]} keyIndices - The key indicies to use for row values, given by user
  * @returns {Number[]}
  */
 function createTable(stringRows, keyIndices, table = []) {
+  /** If at the end of the string rows return */
   if (!stringRows[0]) return table;
 
   const line = stringRows[0];
-  const s = line.trim().split(/[\s]+/g);
-  const rowArray = keyIndices.map((index) => s[index]);
+  const lineArray = line.trim().split(/[\s]+/g);
+  /** Retrieve the values for the table from the given column indicies */
+  const rowArray = keyIndices.map((index) => lineArray[index]);
   table.push(rowArray);
   stringRows.shift();
   return createTable(stringRows, keyIndices, table);
@@ -75,6 +80,7 @@ function getSpread(max, min) {
  * @returns {String|Number|Function}
  */
 function findLowestSpread(table, index = 0, lowest = Number.POSITIVE_INFINITY, lowestMetric) {
+  /** If at the end of the table return */
   if (!table[index]) return lowestMetric;
 
   const [metric, max, min] = table[index];
@@ -83,6 +89,7 @@ function findLowestSpread(table, index = 0, lowest = Number.POSITIVE_INFINITY, l
     lowest = spread;
     lowestMetric = metric;
   }
+  /** Iterating index each time */
   return findLowestSpread(table, index + 1, lowest, lowestMetric)
 }
 
