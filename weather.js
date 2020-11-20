@@ -1,5 +1,6 @@
 // In the attached file (w_data.dat), you’ll find daily weather data. 
-// Download this text file, then write a program to output the day number (column one) with the smallest temperature spread (the maximum temperature is the second column, the minimum the third column).
+// Download this text file, then write a program to output the day number (column one) with
+// the smallest temperature spread (the maximum temperature is the second column, the minimum the third column).
 
 const string = `Dy MxT   MnT   AvT   HDDay  AvDP 1HrP TPcpn WxType PDir AvSp Dir MxS SkyC MxR MnR AvSLP
 1  88    59    74          53.8       0.00 F       280  9.6 270  17  1.6  93 23 1004.5
@@ -52,7 +53,7 @@ function findLowestSpread(table) {
     let lowest;
     let lowestDay;
     table.forEach(({max, min, day}) => {
-        const spread = max - min;
+        const spread = Math.abs(max - min);
         if (typeof(lowest) === 'undefined' || spread < lowest) {
             lowest = spread;
             lowestDay = day;
