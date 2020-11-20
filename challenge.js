@@ -124,6 +124,12 @@ function getHeaderRow(string, metric) {
   })
 }
 
+/**
+ * Helper function to find the column index from a given key name 
+ * @param {String[]} stringSplit - the string split by new lines but still retaining front white space
+ * @param {String} key - Key name for the column to find
+ * @returns {Number}
+ */
 function getKeyIndexFromColumnValue(stringSplit, key) {
   const indexOfHeader = stringSplit[0].indexOf(key);
   const keyAtIndex = stringSplit[1].substr(indexOfHeader, stringSplit[1].length).split(' ').filter((exists) => !!exists)[0];
