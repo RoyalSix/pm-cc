@@ -30,28 +30,6 @@ function getColumnsFromInput(dataString, columnsString) {
 }
 
 /**
- * A wrapper function to handle user input synchronously
- * @param {String} question - Question to prompt user
- * @param {String?} defaultAnswer - (optional) string to pass as placeholder text
- * @returns { Promise<String> }
- */
-function prompt(question, defaultAnswer) {
-  return new Promise((resolve, reject) => {
-    rl.question(question, (resp) => {
-      if (typeof (resp) === 'string') {
-        resolve(resp);
-      } else {
-        reject('There was an error, please try again');
-        rl.close();
-      }
-    })
-    if (defaultAnswer) {
-      rl.write(defaultAnswer);
-    }
-  })
-}
-
-/**
  * Helper function to create a table from a string input of columns/rows
  * @param {String[]} stringRows - The remaining rows of the data to parse
  * @param {Number[]} keyIndices - The key indicies to use for row values, given by user
@@ -105,6 +83,7 @@ function findLowestSpread(table, index = 0, lowest = Number.POSITIVE_INFINITY, l
  * Helper function to create row from the raw string input, which might need cleaning
  * @param {String} dataString - The entire data string
  * @param {String} metric - The key of the column to indicate the metric to solve for
+ * @returns {String[]}
  */
 function getRowsFromDataString(dataString, metric) {
   const htmlStripped = dataString.trim().replace(/<[^>]*>?/gm, '');
@@ -117,6 +96,7 @@ function getRowsFromDataString(dataString, metric) {
  * Helper function to find 
  * @param {String} string - The entire data string
  * @param {String} metric - The key of the column to indicate the metric to solve for
+ * @returns {String[]}
  */
 function getHeaderRow(string, metric) {
   return string.split(/\n/ig).find((line) => {
@@ -136,13 +116,42 @@ function getKeyIndexFromColumnValue(stringSplit, key) {
   return stringSplit[1].trim().split(/\s+/).findIndex((val) => keyAtIndex == val)
 }
 
+/**
+ * A wrapper function to handle user input synchronously
+ * @param {String} question - Question to prompt user
+ * @param {String?} defaultAnswer - (optional) string to pass as placeholder text
+ * @returns { Promise<String> }
+ */
+function prompt(question, defaultAnswer) {
+  return new Promise((resolve, reject) => {
+    rl.question(question, (resp) => {
+      if (typeof (resp) === 'string') {
+        resolve(resp);
+      } else {
+        reject('There was an error, please try again');
+        rl.close();
+      }
+    })
+    if (defaultAnswer) {
+      rl.write(defaultAnswer);
+    }
+  })
+}
+
 async function main() {
+  /** Get file name from user */
   const weatherFileName = await prompt('Please enter name of weather data file: \n', WEATHER_DATA_DEFAULT_NAME);
+  /** Read file string from file system */
   const weatherDataString = fs.readFileSync(weatherFileName, 'utf8');
+  /** Get columns to find minimum spread from user */
   const weatherColumnsString = await prompt('Please enter the columns indices to find the minimum spread respectively: "metric, max, min" separated by commas: \n', DEFAULT_WEATHER_COLUMNS)
+  /** Get the corresponding column indiceies for the column names */
   const [weatherColumnsIndexed, weatherColumnsKeys] = getColumnsFromInput(weatherDataString, weatherColumnsString);
+  /** Split the input based on new lines to prepare for data table creation */
   const weatherStringRows = getRowsFromDataString(weatherDataString, weatherColumnsKeys[0]);
+  /** Create data table of min, max, and metric key i.e. [88, 36, 14] */
   const weatherTable = createTable(weatherStringRows, weatherColumnsIndexed);
+  /** Compute the lowest spread given a table */
   const weatherLowestMetric = findLowestSpread(weatherTable);
   console.log("Found lowest metric for weather data as", weatherLowestMetric);
 
